@@ -1,0 +1,13 @@
+config system global
+    set hostname "fortigate-vnf"
+end
+config system interface
+    edit "port2"
+        set mode dhcp
+        set alias "public"
+    next
+    edit "port3"
+        set mode dhcp
+        set alias "private"
+    next
+end
