@@ -1,6 +1,6 @@
 # Fortigate simple service blueprint
 
-The puprose of this blueprint is to demonstrate how with CFY we can instantiate firewall VNF (Fortigate in this case) with baseline configuration and later on how to instantiate serrvice on top of it.
+The puprose of this blueprint is to demonstrate how with CFY we can instantiate firewall VNF (Fortigate in this case) with baseline configuration and later on how to instantiate serrvice on top of it. Portforwarding is a method of exposing resources which are behind firewall. If application is running behind firewall and is running let's say web page on http://<internal_ip>:8080 - we can expose it to the public on http://<firewall_public_ip>:55555 - and this is exactly what this blueprint does.
 Plugins used:
 * proxy plugin
 * terminal plugin
@@ -17,7 +17,7 @@ password: <empty>
 Once VNF is up, then CFY uses terminal plugin to configure VNF with baseline configuration.
 
 ### fortigate-vnf-portforward-bp.yaml
-Blueprint is responsible for instantiation of simple portforwarding service on top of EXISTING VNF configured with another blueprint. Portforwarding is a method of exposing resources which are behind firewall. In this example we'll have some application running behind firewall on port 8080 and we'll be exposing it on public intergace of firewall on port 55555. In order to do that we use proxy-plugin. Proxy plugin node takes two parameters:
+Blueprint is responsible for instantiation of simple portforwarding service on top of EXISTING VNF configured with another blueprint.  In this example we'll have some application running behind firewall on port 8080 and we'll be exposing it on public intergace of firewall on port 55555. In order to do that we use proxy-plugin. Proxy plugin node takes two parameters:
 * blueprint name (of existing deployment)
 * deployment name (of exisitng deployment).
 In case of fortigate-vnf-portforward-bp.yaml - these are burned in a blueprint code:
