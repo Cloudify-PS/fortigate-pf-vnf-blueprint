@@ -17,7 +17,7 @@ password: <empty>
 Once VNF is up, then CFY uses terminal plugin to configure VNF with baseline configuration.
 
 ### fortigate-vnf-portforward-bp.yaml
-Blueprint is responsible for instantiation of simple portforwarding service on top of EXISTING VNF configured with another blueprint.  In this example we'll have some application running behind firewall on port 8080 and we'll be exposing it on public intergace of firewall on port 55555. In order to do that we use proxy-plugin. Proxy plugin node takes two parameters:
+Blueprint is responsible for instantiation of simple portforwarding service on top of EXISTING VNF configured with another blueprint.  In this example we'll have some application running behind firewall on port 8080 and we'll be exposing it on public interface of firewall on port 55555. In order to do that we use proxy-plugin. Proxy plugin node takes two parameters:
 * blueprint name (of existing deployment)
 * deployment name (of exisitng deployment).
 In case of fortigate-vnf-portforward-bp.yaml - these are burned in a blueprint code:
@@ -29,15 +29,16 @@ node_templates:
     properties:
       resource_config:
         blueprint:
-          id: fortigate-vnf-baseline-bp
+          id: { get_input: baseline-blueprint-name }
           external_resource: true
         deployment:
-          id: fortigate-vnf-baseline-deployment
+          id: { get_input: baseline-deployment-name }
           external_resource: true
           outputs:
             fortigate_vnf_mgmt_ip: mgmt_ip
+
  ```
- Therefore it's important to use same names once instantiating baseline blueprint. They can be parametrized as input therefore if you prefer, do not hesitate to change it.
+Therefore it's important to use same names once instantiating baseline blueprint.
 Proxy plugin is necessary, because we're going to instantiate portforwarding service on top of EXISTING deployment - demonstrating how we can provide service chaining.
 
 ### How to use it?
@@ -49,7 +50,7 @@ it's good to have some application behind firewall. You can use nodecellar or wh
 Once it's up, we can move to second stage which is instantiation of portforwarding service. First we need to edit input file and provide IP address of application we want to expose and port on which we want to expose it:
 ```
 portforward_port: '55555'
-portforward_ip: '192.168.113.3'   <---- nodecellar IP 
+portforward_ip: '192.168.113.3'   <---- nodecellar IP
 ```
 
 ```sh
@@ -61,5 +62,3 @@ Once deployment is ready, you can point your browser to: http://<floating_ip_add
 
 
 ![Fortigate](pic/fortigate-use-case.png)
-
-

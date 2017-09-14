@@ -3,8 +3,6 @@ tosca_definitions_version: cloudify_dsl_1_3
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.0.1/types.yaml
   - https://raw.githubusercontent.com/cloudify-cosmo/cloudify-openstack-plugin/2.2.0/plugin.yaml
-#  - https://raw.githubusercontent.com/cloudify-incubator/cloudify-utilities-plugin/1.2.5/plugin.yaml
-#  - https://raw.githubusercontent.com/MichaelShn/cloudify-utilities-plugin/patch-tmp/plugin.yaml
   - https://raw.githubusercontent.com/cloudify-incubator/cloudify-utilities-plugin/1.3.0/plugin.yaml
 
 
@@ -22,6 +20,18 @@ inputs:
       Port on which service is going to be exposed
     default: '55555'
 
+  baseline-blueprint-name:
+    type: string
+    description: >
+      Blueprint name of baseline Fortigate VNF
+    default: fortigate-vnf-baseline-blueprint
+
+  baseline-deployment-name:
+    type: string
+    description: >
+      Deployment name of baseline Fortigate VNF
+    default: fortigate-vnf-baseline-deployment
+
 
 node_templates:
 
@@ -30,14 +40,14 @@ node_templates:
     properties:
       resource_config:
         blueprint:
-          id: fortigate-vnf-baseline-bp
+          id: { get_input: baseline-blueprint-name }
           external_resource: true
         deployment:
-          id: fortigate-vnf-baseline-deployment
+          id: { get_input: baseline-deployment-name }
           external_resource: true
           outputs:
             fortigate_vnf_mgmt_ip: mgmt_ip
-           
+
 
 
 
@@ -74,6 +84,3 @@ node_templates:
     relationships:
       - type: cloudify.relationships.depends_on
         target: fortigate_vnf_deployment
-
-
-

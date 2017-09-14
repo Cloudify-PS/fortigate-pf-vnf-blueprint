@@ -1,2 +1,4 @@
 portforward_port: '55555'
 portforward_ip: '192.168.113.3'
+baseline-blueprint-name: 'fortigate-vnf-baseline-blueprint'
+baseline-deployment-name: 'fortigate-vnf-baseline-deployment'
