@@ -44,7 +44,7 @@ Proxy plugin is necessary, because we're going to instantiate portforwarding ser
 ### How to use it?
 Best is to use CFY Labs with V4 template and use CFY CLI. In a first stage we need baseline VNF:
 ```sh
-cfy install -d fortigate-vnf-baseline-deployment -b fortigate-vnf-baseline-bp ./fortigate-vnf-baseline-bp.yaml
+cfy install -d fortigate-vnf-baseline-deployment -b fortigate-vnf-baseline-blueprint ./fortigate-vnf-baseline-bp.yaml
 ```
 it's good to have some application behind firewall. You can use nodecellar or whatever you prefer. Configuration template is prepared for nodecellar which exposes application on port 8080 (look into template files)
 Once it's up, we can move to second stage which is instantiation of portforwarding service. First we need to edit input file and provide IP address of application we want to expose and port on which we want to expose it:
