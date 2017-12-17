@@ -1,0 +1,29 @@
+- id: my_button
+  type: button
+  flex: 100
+  position: 101
+  params: 
+    label: "Create Deployment"
+    circular: false
+    icon: facebook
+    color: green
+    action: createDeployment
+    
+- id: my_selectbox
+  type: selectbox
+  flex: 100
+  position: 97
+  params: 
+    label: "My SelectBox"
+    template: "<h1>{{text}}</h1><p>{{value}}</p>"
+    style: 1
+    default: 2b
+    options: 
+    - text: "x-small"
+      value: 1m
+    - text: small
+      value: 2b
+    - text: medium
+      value: 3m
+    - text: large
+      value: 5l
