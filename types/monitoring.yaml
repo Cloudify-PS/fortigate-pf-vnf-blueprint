@@ -1,0 +1,115 @@
+node_types:
+  cloudify.openstack.nodes.MonitoringProxy:
+    derived_from: cloudify.openstack.nodes.Server
+    properties:
+      install_agent:
+        default: true
+      diamond_config:
+        default:
+          interval: 5
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        configure:
+          implementation: openstack.nova_plugin.server.start
+          inputs:
+            start_retry_interval:
+              description: Polling interval until the server is active in seconds
+              type: integer
+              default: 30
+            private_key_path:
+              description: >
+                Path to private key which matches the server's
+                public key. Will be used to decrypt password in case
+                the "use_password" property is set to "true"
+              type: string
+              default: ''
+            openstack_config:
+              default: {}
+        start:
+          implementation: fabric.fabric_plugin.tasks.run_task
+          inputs:
+            tasks_file:
+              default: scripts/install_pysnmp.py
+            task_name:
+              default: install
+            fabric_env:
+              default:
+                host_string: { get_attribute: [SELF, ip] }
+                user: { get_property: [SELF, agent_config, user] }
+                key_filename: { get_property: [SELF, agent_config, key] }
+      cloudify.interfaces.monitoring_agent:
+        install:
+          implementation: diamond.diamond_agent.tasks.install
+          inputs:
+            diamond_config:
+              default: { get_property: [SELF, diamond_config] }
+        start: diamond.diamond_agent.tasks.start
+        stop: diamond.diamond_agent.tasks.stop
+        uninstall: diamond.diamond_agent.tasks.uninstall
+      cloudify.interfaces.monitoring:
+        start:
+          implementation: diamond.diamond_agent.tasks.add_collectors
+          inputs:
+            collectors_config:
+              default:
+                SNMPProxyCollector:
+                  path: scripts/snmp_proxy_collector.py
+                  config: { get_attribute: [ SELF, snmp_config ] }
+
+relationships:
+  cloudify.relationships.monitored_by_proxy:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: scripts/prepare_snmp_config.py
+          executor: central_deployment_agent
+          inputs:
+            port:
+              default: 161
+            community:
+              default: 'public'
+            oids:
+              default:
+                1.3.6.1.4.1.12356.101.4.1.2.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysMgmtVdom
+                1.3.6.1.4.1.12356.101.4.1.3.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysCpuUsage
+                1.3.6.1.4.1.12356.101.4.1.4.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysMemUsage
+                1.3.6.1.4.1.12356.101.4.1.5.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysMemCapacity
+                1.3.6.1.4.1.12356.101.4.1.6.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysDiskUsage
+                1.3.6.1.4.1.12356.101.4.1.7.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysDiskCapacity
+                1.3.6.1.4.1.12356.101.4.1.8.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSesCount
+                1.3.6.1.4.1.12356.101.4.1.9.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysLowMemUsage
+                1.3.6.1.4.1.12356.101.4.1.10.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysLowMemCapacity
+                1.3.6.1.4.1.12356.101.4.1.11.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSesRate1
+                1.3.6.1.4.1.12356.101.4.1.12.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSesRate10
+                1.3.6.1.4.1.12356.101.4.1.13.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSesRate30
+                1.3.6.1.4.1.12356.101.4.1.14.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSesRate60
+                1.3.6.1.4.1.12356.101.4.1.15.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSes6Count
+                1.3.6.1.4.1.12356.101.4.1.16.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSes6Count1
+                1.3.6.1.4.1.12356.101.4.1.17.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSes6Count10
+                1.3.6.1.4.1.12356.101.4.1.18.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSes6Count30
+                1.3.6.1.4.1.12356.101.4.1.19.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysSes6Count60
+                1.3.6.1.4.1.12356.101.4.1.20.0: fnFortiGateMib.fgSystem.fgSystemInfo.fgSysUpTime
+                1.3.6.1.4.1.12356.101.4.4.2.1.2.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorUsage
+                1.3.6.1.4.1.12356.101.4.4.2.1.3.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorUsage5sec
+                1.3.6.1.4.1.12356.101.4.4.2.1.5.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorContainedIn
+                1.3.6.1.4.1.12356.101.4.4.2.1.6.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorPktRxCount
+                1.3.6.1.4.1.12356.101.4.4.2.1.7.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorPktTxCount
+                1.3.6.1.4.1.12356.101.4.4.2.1.8.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorPktDroppedCount
+                1.3.6.1.4.1.12356.101.4.4.2.1.9.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorUserUsage
+                1.3.6.1.4.1.12356.101.4.4.2.1.10.1: fnFortiGateMib.fgSystem.fgProcessors.fgProcessorTable.fgProcessorEntry.fgProcessorSysUsage
+                1.3.6.1.4.1.12356.101.4.6.1.1.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemPageCache
+                1.3.6.1.4.1.12356.101.4.6.1.2.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemCacheActive
+                1.3.6.1.4.1.12356.101.4.6.1.3.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemCacheInactive
+                1.3.6.1.4.1.12356.101.4.6.1.4.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemBuffer
+                1.3.6.1.4.1.12356.101.4.6.1.5.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemEnterKerConsThrsh
+                1.3.6.1.4.1.12356.101.4.6.1.6.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemLeaveKerConsThrsh
+                1.3.6.1.4.1.12356.101.4.6.1.7.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemEnterProxyConsThrsh
+                1.3.6.1.4.1.12356.101.4.6.1.8.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvMem.fgSIAdvMemLeaveProxyConsThrsh
+                1.3.6.1.4.1.12356.101.4.6.2.1.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesEphemeralCount
+                1.3.6.1.4.1.12356.101.4.6.2.2.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesEphemeralLimit
+                1.3.6.1.4.1.12356.101.4.6.2.3.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesClashCount
+                1.3.6.1.4.1.12356.101.4.6.2.4.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesExpCount
+                1.3.6.1.4.1.12356.101.4.6.2.5.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesSyncQFCount
+                1.3.6.1.4.1.12356.101.4.6.2.6.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesAcceptQFCount
+                1.3.6.1.4.1.12356.101.4.6.2.7.0: fnFortiGateMib.fgSystem.fgSystemInfoAdvanced.fgSysInfoAdvSessions.fgSIAdvSesNoListenerCount
