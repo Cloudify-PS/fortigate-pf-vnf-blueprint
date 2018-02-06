@@ -10,13 +10,7 @@ inputs:
   fortigate_image_url:
     default: "https://s3-eu-west-1.amazonaws.com/cloudify-labs/images/FG562-DZ.img"
 
-  user:
-    description: >
-      The username of the agent running on the instance created from the image.
-    default: admin
-  password:
-    default: ""
-
+  
   flavor:
     description: >
       An Openstack Flavor ID.
