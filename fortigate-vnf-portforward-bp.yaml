@@ -24,13 +24,13 @@ inputs:
     type: string
     description: >
       Blueprint name of baseline Fortigate VNF
-    default: fortigate-vnf-baseline-blueprint
+    default: 'fortigate-vnf-baseline-bp'
 
   baseline-deployment-name:
     type: string
     description: >
       Deployment name of baseline Fortigate VNF
-    default: fortigate-vnf-baseline-deployment
+    default: 'fortigate-vnf-baseline'
 
 
 node_templates:
