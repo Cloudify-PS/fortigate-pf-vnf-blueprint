@@ -10,11 +10,23 @@ inputs:
   fortigate_image_url:
     default: "https://s3-eu-west-1.amazonaws.com/cloudify-labs/images/FG562-DZ.img"
 
-  
+
   flavor:
     description: >
       An Openstack Flavor ID.
     default: { get_secret: small_image_flavor }
+
+  private_network:
+    description: >
+      Private network
+    default: "network_openstack-example-network_public_network_6mkjkn"
+
+  private_subnet:
+    description: >
+      Private subnet
+    default: "subnet_openstack-example-network_public_subnet_axcfnb"
+
+
 
 dsl_definitions:
 
@@ -215,7 +227,7 @@ node_templates:
     properties:
       openstack_config: *openstack_config
       use_external_resource: true
-      resource_id: private_subnet
+      resource_id: { get_input: private_subnet }
     relationships:
     - target: private_network
       type: cloudify.relationships.contained_in
@@ -225,7 +237,7 @@ node_templates:
     properties:
       openstack_config: *openstack_config
       use_external_resource: true
-      resource_id: private_network
+      resource_id: { get_input: private_network }
 
   security_group:
     type: cloudify.openstack.nodes.SecurityGroup
